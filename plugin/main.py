@@ -25,11 +25,17 @@ class Playnite(Flox):
     def query(self, query):
         try:
             self.load_settings()
-            games = self.pn.search(query, self.applied_filters)
+            # ignore settings for filters
+            #games = self.pn.search(query, self.applied_filters)
+            
+            games = self.pn.search(query, [IsHidden(invert=True)]) 
             for game in games:
-                self.add_item(
-                    **Result(game).to_dict()
-            )
+                if game.IsInstalled:
+                    self.add_item( **Result(game).to_dict() )
+            if query.strip() != "": 
+                for game in games:
+                    if not game.IsInstalled:
+                        self.add_item( **Result(game).to_dict() )
         except PlayniteNotFound:
             self.add_item(
                 title='Playnite not found! Set the path in the settings.',
